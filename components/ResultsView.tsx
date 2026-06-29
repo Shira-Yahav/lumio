@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, RotateCcw, Plus } from 'lucide-react';
+import { CheckCircle, XCircle, RotateCcw, Plus, GraduationCap } from 'lucide-react';
 import type { QuizData } from '@/lib/types';
 import { getPerformanceTier } from '@/lib/data';
 import clsx from 'clsx';
@@ -12,9 +12,10 @@ interface Props {
   answers: (number | null)[];
   onRetry: () => void;
   onNewTopic: () => void;
+  onLearnMore: () => void;
 }
 
-export default function ResultsView({ quiz, answers, onRetry, onNewTopic }: Props) {
+export default function ResultsView({ quiz, answers, onRetry, onNewTopic, onLearnMore }: Props) {
   const [animated, setAnimated] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -77,26 +78,38 @@ export default function ResultsView({ quiz, answers, onRetry, onNewTopic }: Prop
         </div>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={onRetry}
+              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all"
+              style={{ background: 'var(--surface)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+            >
+              <RotateCcw size={14} />
+              Try Again
+            </button>
+            <button
+              onClick={onNewTopic}
+              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all"
+              style={{ background: 'var(--accent)', color: '#fff' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}
+            >
+              <Plus size={14} />
+              New Topic
+            </button>
+          </div>
           <button
-            onClick={onRetry}
-            className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all"
-            style={{ background: 'var(--surface)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+            onClick={onLearnMore}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all"
+            style={{ background: 'var(--accent-light)', color: 'var(--accent)', border: '1px solid #c7d2fe' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#e0e7ff'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}
           >
-            <RotateCcw size={14} />
-            Try Again
-          </button>
-          <button
-            onClick={onNewTopic}
-            className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all"
-            style={{ background: 'var(--accent)', color: '#fff' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}
-          >
-            <Plus size={14} />
-            New Topic
+            <GraduationCap size={14} />
+            Teach me more about this
           </button>
         </div>
 
