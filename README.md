@@ -1,6 +1,6 @@
 # AI Quiz Generator
 
-**Live demo:** [lumio-wheat.vercel.app](https://lumio-wheat.vercel.app/) &nbsp;|&nbsp; **GitHub:** [Shira-Yahav/QuizApp](https://github.com/Shira-Yahav/QuizApp)
+**Live demo:** [lumio-wheat.vercel.app](https://lumio-wheat.vercel.app/) &nbsp;|&nbsp; **GitHub:** [Shira-Yahav/lumio](https://github.com/Shira-Yahav/lumio)
 
 ---
 
@@ -90,7 +90,7 @@ Quiz content (questions, options, explanations) is rendered via `element.textCon
 ## Running Locally
 
 ```bash
-git clone https://github.com/Shira-Yahav/QuizApp.git
+git clone https://github.com/Shira-Yahav/lumio.git
 cd QuizApp
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your_key_here
