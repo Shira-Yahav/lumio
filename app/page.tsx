@@ -1,22 +1,21 @@
 'use client';
 import { useState, useCallback } from 'react';
 import type { AppState, QuizSettings } from '@/lib/types';
-import HomeView from '@/components/HomeView';
+import HomeWizard from '@/components/HomeWizard';
 import QuizView from '@/components/QuizView';
 import ResultsView from '@/components/ResultsView';
 import LearnView from '@/components/LearnView';
 import LoadingView from '@/components/LoadingView';
+import HistoryView from '@/components/HistoryView';
 
 export default function Page() {
   const [state, setState] = useState<AppState>({ view: 'home' });
-
-  // ── Fetch helpers ──────────────────────────────────────────────────────────
 
   async function fetchQuiz(settings: QuizSettings) {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
+      body: JSON.stringify({ topic: settings.topic, time: settings.time }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -27,14 +26,12 @@ export default function Page() {
     const res = await fetch('/api/learn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: settings.topic }),
+      body: JSON.stringify({ topic: settings.topic, time: settings.time }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     return data;
   }
-
-  // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleQuiz = useCallback(async (settings: QuizSettings) => {
     setState({ view: 'quiz-loading', settings });
@@ -58,31 +55,29 @@ export default function Page() {
     }
   }, []);
 
-  // From LearnView → start a quiz on the same topic
   const handleQuizFromLearn = useCallback(async () => {
     if (state.view !== 'learn') return;
-    const settings = state.settings;
+    const { settings, lesson } = state;
     setState({ view: 'quiz-loading', settings });
     try {
       const quiz = await fetchQuiz(settings);
       setState({ view: 'quiz', quiz, settings, answers: new Array(quiz.questions.length).fill(null), currentQ: 0 });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate quiz.');
-      setState({ view: 'learn', lesson: (state as Extract<AppState, { view: 'learn' }>).lesson, settings });
+      setState({ view: 'learn', lesson, settings });
     }
   }, [state]);
 
-  // From ResultsView → teach me more about this topic
   const handleLearnMore = useCallback(async () => {
     if (state.view !== 'results') return;
-    const settings = state.settings;
+    const { settings, quiz, answers } = state;
     setState({ view: 'learn-loading', settings });
     try {
       const lesson = await fetchLesson(settings);
       setState({ view: 'learn', lesson, settings });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate lesson.');
-      setState({ view: 'results', quiz: (state as Extract<AppState, { view: 'results' }>).quiz, settings, answers: (state as Extract<AppState, { view: 'results' }>).answers });
+      setState({ view: 'results', quiz, settings, answers });
     }
   }, [state]);
 
@@ -113,11 +108,8 @@ export default function Page() {
     setState(prev => {
       if (prev.view !== 'quiz') return prev;
       const unanswered = prev.answers.filter(a => a === null).length;
-      if (unanswered > 0) {
-        const confirmed = window.confirm(
-          `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`
-        );
-        if (!confirmed) return prev;
+      if (unanswered > 0 && !window.confirm(`${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`)) {
+        return prev;
       }
       return { view: 'results', quiz: prev.quiz, settings: prev.settings, answers: prev.answers };
     });
@@ -131,32 +123,19 @@ export default function Page() {
   }, []);
 
   const handleBack = useCallback(() => setState({ view: 'home' }), []);
+  const handleHistory = useCallback(() => setState({ view: 'history' }), []);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
-  if (state.view === 'home') {
-    return <HomeView onLearn={handleLearn} onQuiz={handleQuiz} />;
-  }
-
-  if (state.view === 'quiz-loading') {
-    return <LoadingView settings={state.settings} mode="quiz" />;
-  }
-
-  if (state.view === 'learn-loading') {
-    return <LoadingView settings={state.settings} mode="learn" />;
-  }
+  if (state.view === 'home')         return <HomeWizard onLearn={handleLearn} onQuiz={handleQuiz} onHistory={handleHistory} />;
+  if (state.view === 'history')      return <HistoryView onBack={handleBack} />;
+  if (state.view === 'quiz-loading') return <LoadingView settings={state.settings} mode="quiz" />;
+  if (state.view === 'learn-loading') return <LoadingView settings={state.settings} mode="learn" />;
 
   if (state.view === 'quiz') {
     return (
       <QuizView
-        quiz={state.quiz}
-        answers={state.answers}
-        currentQ={state.currentQ}
-        onAnswer={handleAnswer}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onSubmit={handleSubmit}
-        onBack={handleBack}
+        quiz={state.quiz} answers={state.answers} currentQ={state.currentQ}
+        onAnswer={handleAnswer} onNext={handleNext} onPrev={handlePrev}
+        onSubmit={handleSubmit} onBack={handleBack}
       />
     );
   }
@@ -164,11 +143,9 @@ export default function Page() {
   if (state.view === 'results') {
     return (
       <ResultsView
-        quiz={state.quiz}
-        answers={state.answers}
-        onRetry={handleRetry}
-        onNewTopic={handleBack}
-        onLearnMore={handleLearnMore}
+        quiz={state.quiz} answers={state.answers} settings={state.settings}
+        onRetry={handleRetry} onNewTopic={handleBack}
+        onLearnMore={handleLearnMore} onHistory={handleHistory}
       />
     );
   }
@@ -176,10 +153,8 @@ export default function Page() {
   if (state.view === 'learn') {
     return (
       <LearnView
-        lesson={state.lesson}
-        settings={state.settings}
-        onQuiz={handleQuizFromLearn}
-        onBack={handleBack}
+        lesson={state.lesson} settings={state.settings}
+        onQuiz={handleQuizFromLearn} onBack={handleBack}
       />
     );
   }

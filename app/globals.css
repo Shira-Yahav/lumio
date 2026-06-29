@@ -103,6 +103,41 @@ body {
   transition: stroke-dashoffset 1s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
+/* Radix Tabs active trigger */
+[data-radix-collection-item][data-state="active"] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Radix Accordion animation */
+[data-radix-accordion-content] {
+  overflow: hidden;
+}
+[data-radix-accordion-content][data-state="open"] {
+  animation: accordionDown 180ms ease;
+}
+[data-radix-accordion-content][data-state="closed"] {
+  animation: accordionUp 180ms ease;
+}
+
+@keyframes accordionDown {
+  from { height: 0; opacity: 0; }
+  to   { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes accordionUp {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to   { height: 0; opacity: 0; }
+}
+
+/* Radix Accordion trigger chevron */
+[data-radix-accordion-trigger] [data-chevron] {
+  transition: transform 200ms ease;
+}
+[data-radix-accordion-trigger][data-state="open"] [data-chevron] {
+  transform: rotate(180deg);
+}
+
 /* Loading pulse */
 @keyframes pulse {
   0%, 100% { opacity: 1; }

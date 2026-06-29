@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { LOADING_MESSAGES } from '@/lib/data';
+import { LOADING_MESSAGES, TIME_OPTIONS } from '@/lib/data';
 import type { QuizSettings } from '@/lib/types';
 
 interface Props {
@@ -41,7 +41,10 @@ export default function LoadingView({ settings, mode }: Props) {
             {messages[msgIdx]}
           </p>
           <p className="text-sm" style={{ color: 'var(--text-3)' }}>
-            {mode === 'quiz' ? `${settings.count} questions · ` : ''}{settings.topic}
+            {(() => {
+              const opt = TIME_OPTIONS.find(o => o.value === settings.time);
+              return mode === 'quiz' ? `${opt?.quizCount ?? 10} questions · ${settings.topic}` : settings.topic;
+            })()}
           </p>
         </div>
       </div>

@@ -30,15 +30,37 @@ export interface LearnData {
   diagram: DiagramData;
 }
 
-export type QuizCount = 5 | 10 | 20;
+export type TimeValue = '5' | '10' | '20';
 
 export interface QuizSettings {
   topic: string;
-  count: QuizCount;
+  time: TimeValue;
+  mode: 'learn' | 'quiz';
+  subject: string;
 }
+
+// ── History ──────────────────────────────────────────────────────────────────
+
+export interface HistoryEntry {
+  id: string;
+  date: number;
+  topic: string;
+  subject: string;
+  type: 'learn' | 'quiz';
+  // quiz only
+  quizTitle?: string;
+  score?: number;
+  total?: number;
+  pct?: number;
+  // learn only
+  lessonTitle?: string;
+}
+
+// ── App state ─────────────────────────────────────────────────────────────────
 
 export type AppState =
   | { view: 'home' }
+  | { view: 'history' }
   | { view: 'quiz-loading'; settings: QuizSettings }
   | { view: 'learn-loading'; settings: QuizSettings }
   | { view: 'quiz'; quiz: QuizData; settings: QuizSettings; answers: (number | null)[]; currentQ: number }

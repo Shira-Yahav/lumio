@@ -1,7 +1,10 @@
 'use client';
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lightbulb, GraduationCap } from 'lucide-react';
 import type { LearnData, QuizSettings } from '@/lib/types';
+import { addHistoryEntry } from '@/lib/history';
+import { TIME_OPTIONS } from '@/lib/data';
 
 const MermaidDiagram = dynamic(() => import('./MermaidDiagram'), { ssr: false });
 
@@ -13,6 +16,18 @@ interface Props {
 }
 
 export default function LearnView({ lesson, settings, onQuiz, onBack }: Props) {
+  const timeOpt = TIME_OPTIONS.find(o => o.value === settings.time) ?? TIME_OPTIONS[1];
+
+  useEffect(() => {
+    addHistoryEntry({
+      topic: settings.topic,
+      subject: settings.subject,
+      type: 'learn',
+      lessonTitle: lesson.title,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="min-h-dvh flex flex-col">
       {/* Top bar */}
@@ -32,10 +47,11 @@ export default function LearnView({ lesson, settings, onQuiz, onBack }: Props) {
         </button>
 
         <div
-          className="text-xs px-2.5 py-1 rounded-full font-medium"
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium"
           style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
         >
-          📖 Lesson
+          <GraduationCap size={11} />
+          Lesson · {timeOpt.label}
         </div>
       </div>
 
@@ -88,19 +104,15 @@ export default function LearnView({ lesson, settings, onQuiz, onBack }: Props) {
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
               {section.content}
             </p>
-            {/* Place diagram after first section */}
             {i === 0 && lesson.diagram && (
               <div className="pt-2">
-                <MermaidDiagram
-                  code={lesson.diagram.code}
-                  title={lesson.diagram.title}
-                />
+                <MermaidDiagram code={lesson.diagram.code} title={lesson.diagram.title} />
               </div>
             )}
           </div>
         ))}
 
-        {/* Bottom CTA */}
+        {/* CTA */}
         <div
           className="rounded-2xl p-5 space-y-3 text-center"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
@@ -109,7 +121,7 @@ export default function LearnView({ lesson, settings, onQuiz, onBack }: Props) {
             Ready to test what you just learned?
           </p>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            {settings.count} questions · {settings.topic}
+            {timeOpt.quizCount} questions · {settings.topic}
           </p>
           <button
             onClick={onQuiz}
