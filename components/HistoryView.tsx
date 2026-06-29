@@ -60,13 +60,15 @@ export default function HistoryView({ onBack }: Props) {
           <ArrowLeft size={15} />
           Back
         </button>
-        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Learning History</span>
-        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{totalEntries} sessions</span>
+        <span className="text-sm font-semibold md:hidden" style={{ color: 'var(--text)' }}>History</span>
+        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{totalEntries} session{totalEntries !== 1 ? 's' : ''}</span>
       </div>
 
       <ScrollArea.Root className="flex-1">
         <ScrollArea.Viewport className="w-full">
-          <div className="px-4 py-6 max-w-lg mx-auto space-y-3 pb-10">
+          <div className="px-6 py-8 max-w-6xl mx-auto pb-10">
+            <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--text)' }}>Learning History</h1>
+            <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 space-y-3 md:space-y-0">
 
             {groups.length === 0 && (
               <div className="flex flex-col items-center justify-center py-24 space-y-3">
@@ -171,6 +173,7 @@ export default function HistoryView({ onBack }: Props) {
                 </Accordion.Item>
               ))}
             </Accordion.Root>
+            </div>
           </div>
         </ScrollArea.Viewport>
         <ScrollArea.Scrollbar orientation="vertical" className="w-1.5 p-0.5">

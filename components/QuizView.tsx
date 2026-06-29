@@ -107,7 +107,7 @@ export default function QuizView({ quiz, answers, currentQ, onAnswer, onNext, on
       </div>
 
       {/* Question content */}
-      <div className="flex-1 px-4 py-6 max-w-lg mx-auto w-full space-y-6 view-enter" key={currentQ}>
+      <div className="flex-1 px-4 md:px-8 py-6 max-w-3xl mx-auto w-full space-y-6 view-enter" key={currentQ}>
         {/* Quiz title */}
         <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
           {quiz.title}
@@ -183,7 +183,7 @@ export default function QuizView({ quiz, answers, currentQ, onAnswer, onNext, on
         className="px-4 py-4 sticky bottom-0"
         style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)' }}
       >
-        <div className="max-w-lg mx-auto flex gap-2">
+        <div className="max-w-3xl mx-auto flex gap-2">
           <button
             onClick={onPrev}
             disabled={currentQ === 0}
