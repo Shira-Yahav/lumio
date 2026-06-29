@@ -6,73 +6,77 @@
 
 ## The Problem
 
-Creating a good quiz takes time — not just to write the questions, but to craft plausible wrong answers, balance difficulty, and make sure the correct answer isn't always in the same position. Teachers, trainers, and students routinely spend 30–60 minutes building what should be a 5-minute task. And most AI-generated quizzes still feel cheap: obvious distractors, predictable answer placement, no explanations.
+The average person spends over 2 hours a day on social media — most of it mindless scrolling. That's time that already exists in your day: the commute, the waiting room, the lunch break. The phone is already in your hand. The question is just what you do with it.
 
-## The Solution
+At the same time, when someone actually wants to learn something — prep for an exam, brush up on a topic before a meeting, explore something new — they face the opposite problem: it takes too long to get started. Finding good materials, reading through content, figuring out what to actually test yourself on. By the time the resources are ready, the moment has passed.
 
-A web app where you describe what you want in plain English and get a fully interactive, well-structured quiz in seconds.
+## The Idea
 
-> *"10 questions about the French Revolution, mix of easy and hard"*
-> *"5 tricky Python questions with 3 options each"*
-> *"20 questions about world history"*
+What if learning felt as frictionless as opening Instagram?
 
-That's the entire interface. Type a prompt, click Generate, take the quiz.
+This app lets you describe any topic in plain English and instantly get an interactive quiz — no setup, no searching, no prep. One sentence and you're testing yourself in seconds. It's built for mobile, designed for short sessions, and works for anything from casual curiosity to serious studying.
+
+> *"10 questions about the Roman Empire"*
+> *"5 hard Python questions"*
+> *"Quiz me on the basics of machine learning"*
+
+Type it, generate it, take it — then move on with your day a little smarter.
+
+---
+
+## Who It's For
+
+- **Commuters** who want to use transit time for something other than scrolling
+- **Students** who need quick self-testing while studying a specific subject
+- **Curious people** who want to learn about something they just heard about
+- **Anyone** who finds themselves reaching for their phone out of habit and wants a better option
 
 ---
 
 ## Features
 
 ### Natural Language Prompts
-No forms, no dropdowns. Describe your quiz the way you'd tell a colleague. The app understands topic, question count, difficulty level, and number of answer options — all from free text.
+No categories to browse, no topics to select. Just describe what you want the way you'd say it out loud. The app handles the rest.
 
-### Educationally Sound Question Generation
-The system is explicitly prompted to vary difficulty, randomize correct answer positions, and write distractors that are plausible — not obviously wrong. The result feels like a quiz a human wrote, not a template an algorithm filled in.
+### Mobile-First Experience
+The entire interface fits comfortably on a phone screen. Tap to answer, swipe between questions, see your results — all optimized for one-handed use on the go.
 
-### Interactive Quiz Experience
-- Animated progress bar tracks position through the quiz
-- Answers persist as you navigate back and forth between questions
-- Unanswered question warning before submission so nothing is accidentally skipped
+### Educationally Designed Questions
+The AI is explicitly instructed to vary difficulty, randomize where the correct answer appears, and write wrong answers that are plausible — not obviously false. The result is a quiz that actually challenges you, not one you can beat by pattern-matching.
 
 ### Instant Results with Explanations
-Scoring is immediate. Every question shows whether you got it right, what the correct answer was if you didn't, and a concise explanation of *why* — so the quiz is also a learning tool, not just a test.
+After submitting, every question shows your answer, the correct answer if you got it wrong, and a concise explanation of why. You don't just find out your score — you actually learn from your mistakes.
 
-### "Generate New Quiz" Flow
-One click resets the entire state and returns to the prompt screen. No page reload, no lost context.
+### Progress Tracking During the Quiz
+An animated progress bar and question counter keep you oriented. Your answers are saved as you navigate forward and back, so nothing is lost if you want to review a question.
+
+### Frictionless Reset
+One button generates a new quiz and clears everything. No page reload, no state leak — ready for the next topic immediately.
 
 ---
 
 ## Screenshots
 
-*Coming soon — see the [live demo](https://lumio-wheat.vercel.app/) to explore the app.*
+*See the app in action at the [live demo](https://lumio-wheat.vercel.app/).*
 
 ---
 
 ## Technical Decisions
 
-### Tool Use for Structured Output
-The app uses the Anthropic tool use API (`tool_choice: { type: "tool", name: "generate_quiz" }`) rather than asking the model to return JSON and parsing it. This forces the model to populate a strict schema — title, questions, options, correct index, explanation — with zero chance of format drift, markdown leakage, or hallucinated field names. It's the difference between hoping the model returns valid JSON and guaranteeing it.
+### Tool Use for Guaranteed Structure
+Instead of asking Claude to "return JSON," the app uses the Anthropic tool use API with a strict schema. The model is forced to populate specific fields — title, questions, options, correct index, explanation — rather than generating free text that then needs to be parsed. This eliminates an entire class of bugs (malformed JSON, missing fields, markdown leaking into responses) and makes the API contract explicit and enforceable.
 
-### Claude Sonnet for the Right Cost/Intelligence Trade-off
-Quiz generation requires nuanced reasoning (plausible distractors, difficulty calibration, accurate facts) but not extended context or complex tool chains. Claude Sonnet hits the sweet spot: fast enough to feel snappy, capable enough to produce genuinely good questions, and cost-efficient at scale.
+### Prompt Engineering for Quiz Quality
+Most AI quiz tools produce mediocre output because the prompt is generic. This app's system prompt encodes specific rules that matter for educational quality: vary difficulty across the set, write plausible distractors, randomize the position of the correct answer (models default to first or last), and default to sensible values when the user doesn't specify. The difference in output quality is significant.
 
-### System Prompt Engineering
-The system prompt isn't generic. It encodes specific educational quality rules:
+### Flask + Vanilla JS
+The backend is three routes. The frontend is plain JavaScript — no React, no build step, no bundler. This was a deliberate choice for a focused, single-purpose tool: the app is deployable with one command, loads instantly, and is readable without a framework. Complexity should match the problem being solved.
 
-- Vary difficulty across the set
-- Make wrong answers plausible, not obviously false
-- Randomize correct answer position (models default to putting the right answer first or last)
-- Default sensible values (10 questions, 4 options) so users don't have to specify everything
+### Client-Side Scoring and State
+Once the quiz data arrives from the API, the server is done. All quiz navigation, answer selection, scoring, and results rendering happen entirely in the browser. This means the app responds instantly to every user action and puts zero load on the server during quiz-taking.
 
-This is where most AI quiz tools fall flat — they don't encode these constraints, so the output feels machine-generated.
-
-### Flask + Vanilla JS — No Build Pipeline
-The backend is Flask with three routes: serve the HTML, handle the generate API, done. The frontend is vanilla JavaScript — no React, no bundler, no `node_modules`. This keeps the project deployable in one command (`gunicorn app:app`), readable without a framework mental model, and fast to iterate on. The right tool for a focused, single-feature app.
-
-### Client-Side Scoring
-Once the quiz is generated, all interaction — question rendering, answer selection, scoring, results breakdown — runs entirely in the browser. The server handles one API call per session. This means zero server load during quiz-taking and instant response to every user action.
-
-### XSS-Safe HTML Rendering
-Quiz content (questions, options, explanations) is rendered via `element.textContent`, not `innerHTML`. A dedicated `escapeHtml` utility handles any cases where dynamic content is inserted into HTML strings. User-supplied prompt text never reaches the DOM unescaped.
+### XSS-Safe Rendering
+All dynamic content — questions, options, explanations — is inserted via `textContent`, not `innerHTML`. A dedicated `escapeHtml` function handles any remaining cases. Quiz content generated by an AI model is still untrusted input from the perspective of the DOM.
 
 ---
 
@@ -81,7 +85,7 @@ Quiz content (questions, options, explanations) is rendered via `element.textCon
 | Layer | Technology |
 |-------|-----------|
 | Backend | Python, Flask |
-| AI | Anthropic Claude Sonnet via tool use |
+| AI | Anthropic Claude Sonnet (tool use) |
 | Frontend | Vanilla JavaScript, HTML, CSS |
 | Production server | Gunicorn |
 
@@ -91,7 +95,7 @@ Quiz content (questions, options, explanations) is rendered via `element.textCon
 
 ```bash
 git clone https://github.com/Shira-Yahav/lumio.git
-cd QuizApp
+cd lumio
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your_key_here
 python app.py
